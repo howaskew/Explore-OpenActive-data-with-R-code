@@ -71,11 +71,24 @@ if (!inherits(res, "try-error")) {
 
 ## Exploring a page from a data feed
 
-In this example walkthrough, we're going to start with just one of these feeds.
+The idea of OpenActive is to make it easier to discover what activities are available nearby. 
+By sharing data about all the opportunities for physical exercise, people can design new apps and services to help people get active.
 
-You can follow the feed URL to see the live data in JSON format: <https://agb.sport80-clubs.com/openactive/session-series>
+Let's start with just one of these feeds.
 
-The following code calls this feed URL, returns the same live data and flattens it into a data frame. It looks like 'a lot' of data:
+Click this link to browse to the feed URL to see the live data in JSON format: <https://agb.sport80-clubs.com/openactive/session-series>
+
+We create a simple function to call this feed URL, returns the same live data and flatten it into a data frame. 
+
+Note, although the JSON is flattened, there is still some nesting of data into data frames.
+
+This is indicated where you see for example: "[<data.frame[3 x 13]>]"
+
+Details of the [full data model](https://openactive.io/modelling-opportunity-data/EditorsDraft/) can be found on the developer site but we can explore the basics here.
+
+The information about individual opportunities is held in data$items.
+
+We can use this information to answer 'who, what, where and when' questions about opportunities for sport and physical activity.
 
 ```{r}
 # Call an API endpoint
@@ -98,42 +111,21 @@ data = fromJSON(rawToChar(d$content),flatten = T)
 
 rm(d)
 
-glimpse(data)
-```
+names(data)
 
-Note, although the JSON is flattened, there is still some nesting of data into data frames.
-
-This is indicated where you see for example: "..\$ :'data.frame': 2 obs. of 5 variables:"
-
-Details of the [full data model](https://openactive.io/modelling-opportunity-data/EditorsDraft/) can be found on the developer site but we can explore the basics here.
-
-The information about individual opportunities is held in data\$items:
-
-```{r}
 glimpse(data$items)
-```
-
-Let's look at the first opportunity
-
-```{r}
+# Let's look at the first opportunity
 opp = filter(data$items, state == "updated") %>% slice_head()
 glimpse(opp)
-```
 
-The idea of OpenActive is to make it easier to discover what activities are available nearby. By sharing data about all the opportunities for physical exercise, people can design new apps and services to help people get active.
+#Thinking of the 'who, what, where, when' questions:
 
-Thinking of the 'who, what, where, when' questions:
-
-```{r}
 #Who?
 opp$data.organizer.name
-```
 
-The 'What' is usually contained in data.activity:
+#The 'What' is usually contained in data.activity:
 
-```{r}
 glimpse(opp$data.activity)
-```
 
 We use a standardised list of activities, managed as concepts in a [controlled vocabulary](https://activity-list.openactive.io/en/hierarchical_concepts.html). This helps app designers to consistently present and group and filter activities in search interfaces.
 
