@@ -117,7 +117,6 @@ OpenActive also has a draft [controlled vocabulary for accessibility support](ht
 callURL <- function(url) {
   res <- NULL
   #Check url
-  url = gsub(" ","%20",url)
   res=GET(url)
   if (res$status_code >= 200 && res$status_code < 400) {
     res
@@ -250,8 +249,79 @@ But if new items are found, we need a way to store them alongside the original d
 
 The following code does just that:
 
-#Check the local folder for storing data between sessions
+#Check you're in the local folder for storing data between sessions
 getwd()
+
+#Create a control table
+control <- data.frame(stem="https://agb.sport80-clubs.com/openactive/session-series",penultimate="https://agb.sport80-clubs.com/openactive/session-series",ultimate="https://agb.sport80-clubs.com/openactive/session-series")
+#Because partial pages can be served, it is important to 'remember' the last few pages of a feed
+#To ensure we have all the data, well go back to the page before last, the penultimate page
+#Save to file in OA folder
+saveRDS(control, file="control.rds")
+
+#Steps to read a whole feed
+#Get stems from control table
+#Check control table to see which page to read
+#read a page
+#Check if the feed is complete
+#appending new data to any existing data
+#storing the updated data
+#ppdate the control table.
+#If end of feed: stop
+#If not: Go back to start
+
+#First, here's a slightly more robust version of the earlier callURL function
+callURL <- function(url) {
+  res <- NULL
+  res = try(GET(url), silent = T)
+  if (!inherits(res, "try-error")) {
+    if (res$status_code >= 200 && res$status_code < 400) {
+      res
+    } else {
+      print("Reading URL status error")
+    }
+  } else {
+    print("Reading URL failed")
+  }
+}
+
+updateFeeds <- function() {
+  #Get stems from control table
+  readRDS(file="control.rds")
+  stems = unique(control$stem)
+  #For each stem
+  for (stem in stems) {
+    #Identify next page
+    readRDS(file="control.rds")
+    nextUrl = filter(control, stem==stem)$penultimate
+    print(nextUrl)
+    #Read next page
+    d <- NULL
+    d <- callURL(nextUrl)
+    #If read page ok, read content
+    if (!is.null(d)) {
+      data=rawToChar(d$content)
+      if (validate(data)==T) {
+        #If JSON is valid, unpack it
+        data = fromJSON(rawToChar(d$content),flatten = T)
+        endOfFeed = ifelse((is.data.frame(data$items) & nrow(data$items)<1)|!is.data.frame(data$items),TRUE,FALSE)
+        print(endOfFeed)
+        
+      } else {print("Invalid JSON")}
+    } else {print("Unable to read next page")}
+  }
+}
+
+  
+  
+
+
+
+
+
+
+
+
 ```
 
 
