@@ -4,7 +4,7 @@ Example R code to harvest and display open data about opportunities for sport an
 
 The code assumes users have a basic familiarity with R, but does not require knowledge of OpenActive data. It provides an introduction to some of the key concepts and data structures in OpenActive through simple examples.
 
-Running the code in the cells below takes less than 10 minutes and shows you:
+Running the code below takes less than 10 minutes and shows you:
 - how to find all the OpenActive data feeds
 - how to read a page from a feed to find basic details about opportunities for physical activity
 - how to read and process a whole data feed
@@ -109,6 +109,8 @@ However, in this feed, the individual dated sessions are described in data.subEv
 Ideally, the URL provided for an individual session takes a user directly to the booking page for that session. 
 The simplifies the user journey of discovering and booking, reducing barriers and helping people get active.
 
+OpenActive also has a draft [controlled vocabulary for accessibility support](https://openactive.io/accessibility-support/), but not all providers use this.
+
 ```
 # Call an API endpoint
 
@@ -190,7 +192,6 @@ glimpse(opp$data.offers)
 glimpse(opp$data.accessibilitySupport)
 
 #Like the activity list, these terms are managed as concepts in a vocabulary.
-#OpenActive has a draft [controlled vocabulary for accessibility support](https://openactive.io/accessibility-support/), but not all providers use this.
 ```
 
 ## Reading all the pages in a data feed
