@@ -2,23 +2,28 @@
 
 Example R code to harvest and display open data about opportunities for sport and physical activity.
 
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-This notebook assumes users have a basic familiarity with R, but does not require knowledge of OpenActive data. It provides an introduction to some of the key concepts and data structures in OpenActive through simple examples.
+The code assumes users have a basic familiarity with R, but does not require knowledge of OpenActive data. It provides an introduction to some of the key concepts and data structures in OpenActive through simple examples.
 
 Running the code in the cells below takes less than 10 minutes and shows you:
 - how to find all the OpenActive data feeds
 - how to read a page from a feed to find basic details about opportunities for physical activity
 - how to read and process a whole data feed
+- how to create a simple app to read a feed and filter results
 
+## Setting up and Listing data feeds
+
+This walkthrough assumes you're able to run R code. I recommend using recent versions of [RStudio](https://posit.co/downloads/) and [R](https://www.r-project.org/). I'm using RStudio 2023.09.1+494 "Desert Sunflower" Release for macOS, with R version 4.2.1 (2022-06-23) "Funny-Looking Kid"
+
+OpenActive is a decentralised open data initiative - There is no single central database. Each publisher shares one or more data feeds. At time of writing, there are over 200 feeds. We have created a very simple web application to gather all the feed URLs into one convenient list. 
+
+The following code:
+- create a temporary folder to store the OpenActive data
+- loads some useful libraries for harvesting, manipulating and displaying the data
+- reads the list of feeds, creates a data frame and displays the column names and some of the values
+
+```
 ## Setting up
 
-This code assumes you're using able to run R code. I recommend using recent versions of [RStudio](https://posit.co/downloads/) and [R](https://www.r-project.org/). I'm using RStudio 2023.09.1+494 "Desert Sunflower" Release for macOS, with R version 4.2.1 (2022-06-23) "Funny-Looking Kid"
-
-We'll create a temporary folder to store the OpenActive data and load some useful libraries for harvesting, manipulating and displaying the data:
-
-```{r, setup, echo=TRUE}
 #Set a local folder for storing data between sessions
 datastore = "OpenActive"
 
@@ -30,9 +35,8 @@ if (!file.exists(datastore)) {
   print(paste("FOLDER ALREADY EXISTS:",datastore))
 }
 
-knitr::opts_knit$set(root.dir = datastore)
-```
-```{r,echo=FALSE}
+setwd(datastore)
+
 #Install libraries if needed
 
 library(httr)  
@@ -46,13 +50,8 @@ library(purrr)
 library(tidyr)  
 library(leaflet)  
 library(htmltools)
-```
 
 ## Listing data feeds
-
-OpenActive is a decentralised open data initiative - There is no single central database. Each publisher shares one or more data feeds. At time of writing, there are over 200 feeds. We have created a very simple web application to gather all the feed URLs into one convenient list. The following code reads this list and creates a data frame of all the feeds:
-
-```{r}
 url = "http://dataset-directory.herokuapp.com/datasets"
 
 res = try(GET(url), silent = T)
