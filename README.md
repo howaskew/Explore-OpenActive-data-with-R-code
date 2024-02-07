@@ -17,7 +17,7 @@ This walkthrough assumes you're able to run R code. I recommend using recent ver
 OpenActive is a decentralised open data initiative - There is no single central database. Each publisher shares one or more data feeds. At time of writing, there are over 200 feeds. We have created a very simple web application to gather all the feed URLs into one convenient list. 
 
 The following code:
-- create a temporary folder to store the OpenActive data
+- creates a temporary folder to store the OpenActive data
 - loads some useful libraries for harvesting, manipulating and displaying the data
 - reads the list of feeds, creates a data frame and displays the column names and some of the values
 
@@ -90,7 +90,22 @@ The information about individual opportunities is held in data$items.
 
 We can use this information to answer 'who, what, where and when' questions about opportunities for sport and physical activity.
 
-```{r}
+The following code:
+- reads a feed of OpenActive data and flattens it into a data frame
+- filters out the first opportunity
+- displays the who, what, where and when information
+- displays some other useful information
+
+Notes:
+
+For the 'what', we use a standardised list of activities, managed as concepts in a [controlled vocabulary](https://activity-list.openactive.io/en/hierarchical_concepts.html). This helps app designers to consistently present and group and filter activities in search interfaces.
+
+The 'when' may not be obvious at first glance - there is no date field. This is a feed of SessionSeries - it contains information that relates to a number of sessions. 
+The date and time information that relates to an individual scheduled session is handled separately. 
+In some cases, SessionSeries feeds are linked to ScheduledSession feeds by an id variable. 
+However, in this feed, the individual dated sessions are described in data.subEvent:
+
+```
 # Call an API endpoint
 
 callURL <- function(url) {
@@ -124,36 +139,26 @@ glimpse(opp)
 opp$data.organizer.name
 
 #The 'What' is usually contained in data.activity:
-
 glimpse(opp$data.activity)
 
-We use a standardised list of activities, managed as concepts in a [controlled vocabulary](https://activity-list.openactive.io/en/hierarchical_concepts.html). This helps app designers to consistently present and group and filter activities in search interfaces.
-
-```{r}
+#This shows the relevant concepts chosen from a controlled vocabulary.
 #What?
 opp$data.activity[[1]]$prefLabel
-```
 
-We can see 'where' in the data.location fields:
-
-```{r}
+#We can see 'where' in the data.location fields:
 glimpse(select(opp,contains("data.location")))
-```
 
-With geospatial coordinates, we can plot the location on a map, using leaflet:
+#With geospatial coordinates, we can plot the location on a map, using leaflet:
 
-```{r}
 #Where?
 leaflet() %>%
   addTiles() %>% 
   addMarkers(lng= opp$data.location.geo.longitude, 
              lat=opp$data.location.geo.latitude, 
              popup=opp$data.activity[[1]]$prefLabel)
-```
 
-The 'when' is not obvious at first glance - there is no date field. This is a feed of SessionSeries - it contains information that relates to a number of sessions. The date and time information that relates to an individual scheduled session is handled separately. In some cases, SessionSeries feeds are linked to ScheduledSession feeds by an id variable. However, in this feed, the individual dated sessions are described in data.subEvent:
+#The 'when' is not obvious at first glance - there is no date field. This is a feed of SessionSeries - it contains information that relates to a number of sessions. The date and time information that relates to an individual scheduled session is handled separately. In some cases, SessionSeries feeds are linked to ScheduledSession feeds by an id variable. However, in this feed, the individual dated sessions are described in data.subEvent:
 
-```{r}
 glimpse(opp$data.subEvent)
 ```
 
