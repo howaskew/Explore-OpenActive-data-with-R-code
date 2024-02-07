@@ -209,13 +209,13 @@ Remember the goal is to simplify the user journey from discovering an activity t
 
 The solution OpenActive have developed is called the [Realtime Paged Data Exchange](https://developer.openactive.io/publishing-data/data-feeds/how-a-data-feed-works), or RPDE.
 
-You can check out the link above for full details. For now, the key points are:\
-1. data is served in pages\
-2. each page includes a link to the next page\
+You can check out the link above for full details. For now, the key points are:
+1. data is served in pages
+2. each page includes a link to the next page
 3. you keep a copy of the data, so you only need to pick up the new pages
-4. an opportunity can appear more than once, on more than one page\
-5. the latest version of each opportunity has the most up to date information\
-6. opportunities have a state of either 'updated' or 'deleted'\
+4. an opportunity can appear more than once, on more than one page
+5. the latest version of each opportunity has the most up to date information
+6. opportunities have a state of either 'updated' or 'deleted'
 
 Looking again at the feed we returned earlier:
 ```{r}
