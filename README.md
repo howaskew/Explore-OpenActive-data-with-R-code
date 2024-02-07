@@ -216,50 +216,40 @@ But if new items are found, we need a way to store them alongside the original d
 This allows us to minimise the burden on publisher's systems and to do the processing required for RPDE points 4, 5 and 6 above.
 
 Here's one approach:
-Create a folder to store the combined datasets
-Create a 'control table' or similar to track what page you are on
-Start reading a feed, appending new data to any existing data and storing after each page
-Update the control table.
+- Create a folder to store the combined datasets
+- Create a 'control table' or similar to track what page you are on
+- Start reading a feed, appending new data to any existing data and storing after each page
+- Update the control table.
 
 This means you can pick up reading a feed without starting all over again, minimising the burden on publishers and making it easier to resume after any error.
 
 The following code:
-- looks at the data colleted earlier to identify the next page in the feed
+- looks at the data collected earlier to identify the next page in the feed
 - checks if there is new data to process or if we've reached the end of the feed
 - creates a function to read, process and store a whole data feed, as per the process above.
 
-Looking again at the feed we returned earlier, There is an field called 'next' that lists the url of the next page in the feed:
-```{r}
+
+```
+#Looking again at the feed we returned earlier
 names(data)
-```
-
-```{r}
+#There is an field called 'next' that lists the url of the next page in the feed:
 data['next']
-```
-This is the same base or stem in the url with added parameters: afterTimestamp and afterId.
+#This is the same base or stem in the url with added parameters: afterTimestamp and afterId.
+#This tells a data consumer where to pickup reading the feed.
 
-This tells a data consumer where to pickup reading the feed.
+#Using the earlier function, we can call this new url:
 
-Using the earlier function with this new url:
-
-```{r}
 d <- callURL(data['next'])
 next_page = fromJSON(rawToChar(d$content),flatten = T)
 rm(d)
 glimpse(next_page)
-```
-Look at the items in this new page. If it is empty or null (an empty list in this case) then we have no new items to consider - we are at the end of the feed.
 
-But if new items are found, we need a way to store them alongside the original data. This allows us to minimise the burden on publisher's systems and to do the processing required for RPDE points 4, 5 and 6 above.
-
-Here's one approach:
-Create a folder to store the combined datasets
-Create a 'control table' or similar to track what page you are on
-Start reading a feed, appending new data to any existing data and storing after each page
-Update the control table.
+Look at the items in this new page.
+If it is empty or null (an empty list in this case) then we have no new items to consider - we are at the end of the feed.
+But if new items are found, we need a way to store them alongside the original data. 
 
 The following code does just that:
-```{r}
+
 #Check the local folder for storing data between sessions
 getwd()
 ```
