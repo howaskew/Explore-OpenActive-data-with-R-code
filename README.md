@@ -208,11 +208,31 @@ You can check out the link above for full details. For now, the key points are:
 5. the latest version of each opportunity has the most up to date information
 6. opportunities have a state of either 'updated' or 'deleted'
 
-Looking again at the feed we returned earlier:
+Looking again at the feed we returned earlier, There is an field called 'next' that lists the url of the next page in the feed.
+This is a URL with same base or stem in the url with added parameters: afterTimestamp and afterId.
+This tells a data consumer where to pickup reading the feed.
+If the next page is empty, then we have no new items to consider - we are at the end of the feed.
+But if new items are found, we need a way to store them alongside the original data.
+This allows us to minimise the burden on publisher's systems and to do the processing required for RPDE points 4, 5 and 6 above.
+
+Here's one approach:
+Create a folder to store the combined datasets
+Create a 'control table' or similar to track what page you are on
+Start reading a feed, appending new data to any existing data and storing after each page
+Update the control table.
+
+This means you can pick up reading a feed without starting all over again, minimising the burden on publishers and making it easier to resume after any error.
+
+The following code:
+- looks at the data colleted earlier to identify the next page in the feed
+- checks if there is new data to process or if we've reached the end of the feed
+- creates a function to read, process and store a whole data feed, as per the process above.
+
+Looking again at the feed we returned earlier, There is an field called 'next' that lists the url of the next page in the feed:
 ```{r}
 names(data)
 ```
-There is an field called 'next' that lists the url of the next page in the feed:
+
 ```{r}
 data['next']
 ```
