@@ -395,11 +395,11 @@ leaflet() %>%
 
 ## Creating a simple shiny app to display and filter OpenActive data
 
-Now we have a store of OpenActive opportunity data, we explore what activities are available.
+Now we have a store of OpenActive opportunity data, we can explore what activities are available.
 
 The following code:
 - displays the opportunity data from the feeds collected earlier
-- Allows you to filter by organiser
+- Allows you to filter by organiser and activity
 - displays the raw data in json format
 
 ```
