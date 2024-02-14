@@ -243,11 +243,11 @@ next_page = fromJSON(rawToChar(d$content),flatten = T)
 rm(d)
 glimpse(next_page)
 
-Look at the items in this new page.
-If it is empty or null (an empty list in this case) then we have no new items to consider - we are at the end of the feed.
-But if new items are found, we need a way to store them alongside the original data. 
+#Look at the items in this new page.
+#If it is empty or null (an empty list in this case) then we have no new items to consider - we are at the end of the feed.
+#But if new items are found, we need a way to store them alongside the original data. 
 
-The following code does just that:
+#The following code does just that:
 
 #Check you're in the local folder for storing data between sessions
 getwd()
