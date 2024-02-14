@@ -8,7 +8,7 @@ Running the code below takes less than 10 minutes and shows you:
 - how to find all the OpenActive data feeds
 - how to read a page from a feed to find basic details about opportunities for physical activity
 - how to read and process a whole data feed
-- how to create a simple app to read a feed and filter results
+- how to create a simple app to display OpenActive data and filter results
 
 ## Setting up and listing OpenActive data feeds
 
@@ -225,7 +225,7 @@ This means you can pick up reading a feed without starting all over again, minim
 The following code:
 - looks at the data collected earlier to identify the next page in the feed
 - checks if there is new data to process or if we've reached the end of the feed
-- creates a function to read, process and store a whole data feed, as per the process above.
+- creates a function to read, process and store whole data feeds, as per the process above.
 
 
 ```
@@ -393,9 +393,31 @@ leaflet() %>%
   
 ```
 
+## Creating a simple shiny app to display and filter OpenActive data
+
+Now we have a store of OpenActive opportunity data, we explore what activities are available.
+
+The following code:
+- displays the opportunity data from the feeds collected earlier
+- Allows you to filter by organiser
+- displays the raw data in json format
+
+```
 
 
 
+
+
+opp <- readRDS("feed_no_1.rds")
+
+leaflet() %>%
+  addTiles() %>% 
+  addMarkers(lng= opp$data.location.geo.longitude, 
+             lat=opp$data.location.geo.latitude, 
+             popup=opp$data.activity[[1]]$prefLabel)
+
+  
+```
 
 
 
