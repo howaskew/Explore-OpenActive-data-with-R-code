@@ -41,15 +41,15 @@ setwd(datastore)
 
 library(httr)  
 library(jsonlite)  
-library(lubridate)  
-library(stringr)  
+#library(lubridate)  
+#library(stringr)  
 library(dplyr)  
-library(rvest)   
-library(readr)  
-library(purrr)  
-library(tidyr)  
+#library(rvest)   
+#library(readr)  
+#library(purrr)  
+#library(tidyr)  
 library(leaflet)  
-library(htmltools)
+#library(htmltools)
 
 ## Listing data feeds
 url = "http://dataset-directory.herokuapp.com/datasets"
@@ -253,75 +253,144 @@ The following code does just that:
 getwd()
 
 #Create a control table
-control <- data.frame(stem="https://agb.sport80-clubs.com/openactive/session-series",penultimate="https://agb.sport80-clubs.com/openactive/session-series",ultimate="https://agb.sport80-clubs.com/openactive/session-series")
-#Because partial pages can be served, it is important to 'remember' the last few pages of a feed
-#To ensure we have all the data, well go back to the page before last, the penultimate page
-#Save to file in OA folder
+control <- data.frame(feed_no=1:3,stem=c("https://agb.sport80-clubs.com/openactive/session-series",
+                                         "https://opendata.exercise-anywhere.com/api/rpde/session-series",
+                                         "https://api.premiertennis.co.uk/openactive/feed/facility-uses"),NEXT="")
+control$NEXT <- ifelse(control$NEXT=="",control$stem,control$NEXT)
+#Save to file in the folder
 saveRDS(control, file="control.rds")
 
-#Steps to read a whole feed
-#Get stems from control table
-#Check control table to see which page to read
-#read a page
-#Check if the feed is complete
-#appending new data to any existing data
-#storing the updated data
-#ppdate the control table.
-#If end of feed: stop
-#If not: Go back to start
+#Steps to harvest data from a list of feeds in a control table
+#1) Get stems from control table
+#2) Check control table to see which page to read
+#3) Read a page 
+#4) Check if the page has new data
+#5) Read in any existing data
+#6) Append rows
+#7) Sort by id and modified and keep last modified
+#8) Storing the updated data
+#9) Update the control table.
+#10) If end of feed: go on to next feed
+#11) If not: Go back to start
 
 #First, here's a slightly more robust version of the earlier callURL function
-callURL <- function(url) {
+#It also includes a check to see if 5 seconds has passed since last call, to reduce burden on data providers
+callURL <- function(url,lastStartTime) {
+  # Check if at least 5 seconds have passed before calling URL
+  elapsedTime <- difftime(Sys.time(), lastStartTime, units = "secs")
+  if (elapsedTime < 5) {
+    Sys.sleep(5 - as.numeric(elapsedTime))
+  }
   res <- NULL
   res = try(GET(url), silent = T)
   if (!inherits(res, "try-error")) {
     if (res$status_code >= 200 && res$status_code < 400) {
-      res
     } else {
       print("Reading URL status error")
     }
   } else {
     print("Reading URL failed")
   }
+  res
 }
 
+#A quick function to tidy up after reading each page
+cleanUp <- function() {
+  objects <- c("control","d","data","dataToStore","endOfFeed","files","nextUrl","previous")
+  for (object in objects)
+  if (exists(object)) {rm(object)}
+}
+
+#A function to harvest OA data 
 updateFeeds <- function() {
-  #Get stems from control table
-  readRDS(file="control.rds")
-  stems = unique(control$stem)
+  #1) Get no of feeds from control table
+  control <- readRDS(file="control.rds")
+  n_stems <- nrow(control)
+  rm(control)
   #For each stem
-  for (stem in stems) {
-    #Identify next page
-    readRDS(file="control.rds")
-    nextUrl = filter(control, stem==stem)$penultimate
-    print(nextUrl)
-    #Read next page
-    d <- NULL
-    d <- callURL(nextUrl)
+  feed <- 1
+  page <- 1
+  startTime <- Sys.time()-5
+  while (feed <= n_stems) {
+    #2) Identify next page for the feed
+    control <- readRDS(file="control.rds")
+    nextUrl = filter(control, feed_no==feed)$NEXT
+    print(paste("Reading feed:", feed, " page:",page,"-",nextUrl))
+    #3) Read next page
+    lastStartTime <- startTime
+    startTime <- Sys.time()
+    d <- callURL(nextUrl,lastStartTime)
     #If read page ok, read content
     if (!is.null(d)) {
       data=rawToChar(d$content)
       if (validate(data)==T) {
         #If JSON is valid, unpack it
         data = fromJSON(rawToChar(d$content),flatten = T)
-        endOfFeed = ifelse((is.data.frame(data$items) & nrow(data$items)<1)|!is.data.frame(data$items),TRUE,FALSE)
-        print(endOfFeed)
+        #4) Check if the new page has items
+        if (is.data.frame(data$items)) {
+        if (is.data.frame(data$items) & nrow(data$items)>0) {
+          #5) Appending new data to any existing data
+          files = list.files()
+          previous = paste0("feed_no_",feed,".rds")
+          if (previous %in% files) {
+            print(paste("READING PREVIOUS DATA AND ADDING",nrow(data$items),"ITEMS"))
+            dataToStore <- readRDS(previous)
+            #6) Append the new rows
+            dataToStore <- bind_rows(dataToStore,data$items)
+            #7) Sort by id and modified and keep last modified
+            dataToStore <- arrange(dataToStore,id,modified) %>% group_by(id) %>% slice_tail()
+          } else {
+            print(paste("NO PREVIOUS DATA - CREATING FILE AND ADDING",nrow(data$items),"ITEMS"))
+            dataToStore = data$items
+          } 
+          #8) Storing the updated data
+          #For displaying live opportunities, remove any 'deleted' items
+          dataToStore <- filter(dataToStore,state=='updated')
+          saveRDS(dataToStore, file=paste0("feed_no_",feed,".rds"))
+        } else {
+          print("NO NEW ITEMS")
+        }
+        } else {
+          print("NO NEW ITEMS")
+        }
+        #9) Update the control table:
+        control$NEXT[control$feed_no == feed] <- data$`next` 
+        saveRDS(control, file="control.rds")
         
+        #10) If end of feed: stop
+        #Simple check for end of feed - next URL is same as the URL you just called
+        endOfFeed = ifelse(nextUrl==data$`next`,TRUE,FALSE)
+        if (endOfFeed) {
+          print("END OF FEED")
+          #clean up
+          cleanUp()
+          #Go to next line in control table
+          feed=feed+1
+          page = 1
+        } else {
+          #11) If not: Go back to start 
+          print("CHECK NEXT PAGE")
+          page=page+1
+        }
       } else {print("Invalid JSON")}
     } else {print("Unable to read next page")}
   }
 }
 
+#Execute this function
+updateFeeds()
+
+#Quick test of collected data
+
+opp <- readRDS("feed_no_1.rds")
+
+leaflet() %>%
+  addTiles() %>% 
+  addMarkers(lng= opp$data.location.geo.longitude, 
+             lat=opp$data.location.geo.latitude, 
+             popup=opp$data.activity[[1]]$prefLabel)
+
   
-  
-
-
-
-
-
-
-
-
 ```
 
 
