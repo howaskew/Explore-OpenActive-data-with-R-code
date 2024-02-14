@@ -163,8 +163,8 @@ leaflet() %>%
              popup=opp$data.activity[[1]]$prefLabel)
 
 #The 'when' is not obvious at first glance - there is no date field.
-This is a feed of SessionSeries - it contains information that relates to a number of sessions.
-In this feed, the individual dated sessions are described in data.subEvent:
+#This is a feed of SessionSeries - it contains information that relates to a number of sessions.
+#In this feed, the individual dated sessions are described in data.subEvent:
 
 glimpse(opp$data.subEvent)
 
