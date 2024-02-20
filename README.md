@@ -10,6 +10,8 @@ Running the code below takes less than 10 minutes and shows you:
 - how to read and process a whole data feed
 - how to create a simple app to display OpenActive data and filter results
 
+![Screenshot of basic OpenActive web app](images/screenshot.png)
+
 ## Setting up and listing OpenActive data feeds
 
 This walkthrough assumes you're able to run R code. I recommend using recent versions of [RStudio](https://posit.co/downloads/) and [R](https://www.r-project.org/). I'm using RStudio 2023.09.1+494 "Desert Sunflower" Release for macOS, with R version 4.2.1 (2022-06-23) "Funny-Looking Kid"
