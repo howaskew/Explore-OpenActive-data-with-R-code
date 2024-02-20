@@ -402,6 +402,8 @@ Notes:
 
 Only records with latitude and longitude are shown.
 
+There is some processing to unpack the activity and facility type labels into a consistent form.
+
 The 'raw' data for an opportunity is not the original json, but the R data frame version where nested json is converted to lists.
 
 ```
@@ -506,6 +508,15 @@ shinyApp(ui = ui, server = server)
 
   
 ```
+
+There you have it - an intro to exploring OpenActive opportunity data in R.
+
+That covers the basics. Areas for further exploration:
+- combining linked data feeds e.g. SessionSeries and ScheduledSessions
+- handling inconsistencies between feeds
+
+
+
 
 
 
