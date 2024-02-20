@@ -37,19 +37,15 @@ if (!file.exists(datastore)) {
 
 setwd(datastore)
 
-#Install libraries if needed
+#Install libraries if needed with for example: install_packages("httr")
 
 library(httr)  
 library(jsonlite)  
-#library(lubridate)  
-#library(stringr)  
-library(dplyr)  
-#library(rvest)   
-#library(readr)  
-#library(purrr)  
-#library(tidyr)  
+library(dplyr)
+library(tidyr)  
 library(leaflet)  
-#library(htmltools)
+library(shiny)
+library(ggplot2)
 
 ## Listing data feeds
 url = "http://dataset-directory.herokuapp.com/datasets"
@@ -399,22 +395,114 @@ Now we have a store of OpenActive opportunity data, we can explore what activiti
 
 The following code:
 - displays the opportunity data from the feeds collected earlier
-- Allows you to filter by organiser and activity
-- displays the raw data in json format
+- allows you to filter by activity or facility type
+- displays the raw data for each opportunity
+
+Notes:
+
+Only records with latitude and longitude are shown.
+
+The 'raw' data for an opportunity is not the original json, but the R data frame version where nested json is converted to lists.
 
 ```
 
+#Combine the OA data from the collected feeds
+control <- readRDS(file="control.rds")
+feeds <- unique(control$feed_no)
+OAData <- data.frame()
+for (feed in feeds) {
+  print(feed)
+  previous = paste0("feed_no_",feed,".rds")
+  dataToAdd <- readRDS(previous)
+  #Pull out activity if available
+  if ("data.facilityType" %in% names(dataToAdd)) {
+    dataToAdd <- hoist(dataToAdd, data.facilityType, "prefLabel")
+  }
+  if ("data.activity" %in% names(dataToAdd)) {
+    dataToAdd <- hoist(dataToAdd, data.activity, "prefLabel")
+  }
+  
+  #Handle variable format issues
+  dataToAdd <- bind_rows(OAData, dataToAdd %>% mutate_all(as.character))
+  print(paste("ADDING",nrow(dataToAdd),"ITEMS"))
+  OAData <- bind_rows(OAData,dataToAdd)
+}
+
+OAData <- OAData %>% type.convert() %>% filter(!is.na(data.location.geo.latitude))
 
 
+#Define UI for a simple application
+ui <- fluidPage(
+  #css for visual styling
+  tags$style("#logo {margin: 0px 10px}"),
+  #header row
+  titlePanel(fluidRow(
+    tags$img(src = "https://www.openactive.io/wp-content/themes/open-active-1_4/images/open-active-logo.svg", 
+             width = "100px", id = "logo"), "Exploring OpenActive Opportunity Data in R")),
+  
+  #Sidebar with filters
+  sidebarLayout(
+    sidebarPanel(
+      checkboxGroupInput(
+        "activity", "Filter by Activity / Facility",
+        choices = unique(OAData$prefLabel), 
+        selected = unique(OAData$prefLabel)
+      ),
+      hr(), #Add a horizontal divider
+      p("Click on an Opportunity marker on the map to see the data."),
+      hr(), 
+      strong("Opportunities by feed type:"),
+      br(),br(),
+      plotOutput("myplot", width="100%")
+    ),
+  #Main panel
+  mainPanel(
+      leafletOutput("mymap"),
+      br(), 
+      tableOutput("record")
+    )
+  )
+)
 
+#Define server logic to run the app
+server <- function(input, output) {
+  
+  #Apply filters
+  subsetted <- reactive({
+    req(input$activity)
+    OAData |> filter(prefLabel %in% input$activity)
+  })
+  
+  #Display map
+  output$mymap <- renderLeaflet({
+    leaflet() %>%
+      addTiles() %>%
+      addMarkers(lng=subsetted()$data.location.geo.longitude, 
+                 lat=subsetted()$data.location.geo.latitude, 
+                 popup=subsetted()$prefLabel, layerId = subsetted()$id,
+                 clusterOptions = markerClusterOptions())
+    
+  })
+  
+  #Display chart
+  output$myplot <- renderPlot({
+    ggplot(OAData, aes(x=kind, fill=kind)) + 
+      geom_bar( ) + scale_fill_brewer() + theme_void() + 
+      theme(legend.position="bottom", legend.title = element_blank(),
+            axis.text.y = element_text(), 
+            panel.grid.major.y = element_line(color = "gray", linetype = "dashed")
+      )
+  })
+  
+  #When map marker clicked, show raw data
+  observeEvent(input$mymap_marker_click, {
+    record <- t(filter(subsetted(), id == input$mymap_marker_click$id))
+    output$record <- renderTable(record, colnames = F, rownames = T)
+  })
+}
 
-opp <- readRDS("feed_no_1.rds")
-
-leaflet() %>%
-  addTiles() %>% 
-  addMarkers(lng= opp$data.location.geo.longitude, 
-             lat=opp$data.location.geo.latitude, 
-             popup=opp$data.activity[[1]]$prefLabel)
+#Run the application 
+shinyApp(ui = ui, server = server)
 
   
 ```
