@@ -321,7 +321,7 @@ updateFeeds <- function() {
     #If read page ok, read content
     if (!is.null(d)) {
       data=rawToChar(d$content)
-      if (validate(data)==T) {
+      if (jsonlite::validate(data)==T) {
         #If JSON is valid, unpack it
         data = fromJSON(rawToChar(d$content),flatten = T)
         #4) Check if the new page has items
