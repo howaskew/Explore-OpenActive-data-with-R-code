@@ -57,11 +57,8 @@ if (!inherits(res, "try-error")) {
   if (res$status_code >= 200 && res$status_code < 400) {
     data_feeds = NULL
     #If status ok, read content
-    data_feeds=rawToChar(res$content)
-    if (validate(data_feeds)==T) { 
-      data_feeds=fromJSON(rawToChar(res$content))
-      glimpse(data_feeds)
-    } else {print("Unable to read data feeds JSON")}
+    data_feeds=fromJSON(rawToChar(res$content))
+    glimpse(data_feeds)
   } else {print("Unable to read data feeds URL")}
   rm(res)
 }
