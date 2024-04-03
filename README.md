@@ -58,7 +58,7 @@ if (!inherits(res, "try-error")) {
     data_feeds = NULL
     #If status ok, read content
     data_feeds=rawToChar(res$content)
-    if (validate(data_feeds)==T) { 
+    if (jsonlite::validate(data_feeds)==T) { 
       data_feeds=fromJSON(rawToChar(res$content))
       glimpse(data_feeds)
     } else {print("Unable to read data feeds JSON")}
@@ -321,7 +321,7 @@ updateFeeds <- function() {
     #If read page ok, read content
     if (!is.null(d)) {
       data=rawToChar(d$content)
-      if (validate(data)==T) {
+      if (jsonlite::validate(data)==T) {
         #If JSON is valid, unpack it
         data = fromJSON(rawToChar(d$content),flatten = T)
         #4) Check if the new page has items
