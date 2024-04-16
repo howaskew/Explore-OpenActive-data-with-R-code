@@ -2,9 +2,11 @@
 
 Example R code to harvest and display open data about opportunities for sport and physical activity.
 
+R is a free and open-source programming language and software environment specifically designed for statistical computing and graphics, popular with data scientists, statisticians, and researchers across various fields.
+
 The code assumes users have a basic familiarity with R, but does not require knowledge of OpenActive data. It provides an introduction to some of the key concepts and data structures in OpenActive through simple examples.
 
-Running the code below takes less than 10 minutes and shows you:
+The code below shows you:
 - how to find all the OpenActive data feeds
 - how to read a page from a feed to find basic details about opportunities for physical activity
 - how to read and process a whole data feed
@@ -16,10 +18,10 @@ Running the code below takes less than 10 minutes and shows you:
 
 This walkthrough assumes you're able to run R code. I recommend using recent versions of [RStudio](https://posit.co/downloads/) and [R](https://www.r-project.org/). I'm using RStudio 2023.09.1+494 "Desert Sunflower" Release for macOS, with R version 4.2.1 (2022-06-23) "Funny-Looking Kid"
 
-OpenActive is a decentralised open data initiative - There is no single central database. Each publisher shares one or more data feeds. At time of writing, there are over 200 feeds. We have created a very simple web application to gather all the feed URLs into one convenient list. 
+OpenActive is a decentralised open data initiative - There is no single central database. Each publisher shares one or more data feeds. At time of writing, there are over 200 feeds. For convenience, the OpenActive team have created a very simple web application to gather all the feed URLs into one convenient list. Here, we can use that list as a start point.
 
 The following code:
-- creates a temporary folder to store the OpenActive data
+- creates a temporary folder to store the OpenActive data we will collect in this walkthrough
 - loads some useful libraries for harvesting, manipulating and displaying the data
 - reads the list of feeds, creates a data frame and displays the column names and some of the values
 
@@ -74,40 +76,25 @@ By sharing data about all the opportunities for physical exercise, people can de
 
 Let's start with just one of these data feeds.
 
-Click this link to browse to the feed URL to see the live data in JSON format: <https://agb.sport80-clubs.com/openactive/session-series>
+Click this link to browse to the feed URL to see a page of live data in JSON format: <https://agb.sport80-clubs.com/openactive/session-series>
 
 We'll create a simple function to call this feed URL, return the same live data and flatten it into a data frame. 
 
 Note, although the JSON is flattened, there is still some nesting of data into data frames.
 
-This is indicated where you see for example: "[<data.frame[3 x 13]>]"
+This is indicated where you see for example: ```[<data.frame[3 x 13]>]```
 
 Details of the [full data model](https://openactive.io/modelling-opportunity-data/EditorsDraft/) can be found on the developer site but we can explore the basics here.
 
 The information about individual opportunities for sport and physical activity is held in data$items.
 
-We can use this information to answer 'who, what, where and when' questions.
+We can use this information to answer "who, what, where and when" questions.
 
 The following code:
-- reads a feed of OpenActive data and flattens it into a data frame
+- reads a page of OpenActive data and flattens it into a data frame
 - filters out the first opportunity
 - displays the who, what, where and when information
 - displays some other useful information
-
-Notes:
-
-For the 'what', we use a standardised list of activities, managed as concepts in a [controlled vocabulary](https://activity-list.openactive.io/en/hierarchical_concepts.html). 
-This helps app designers to consistently present and group and filter activities in search interfaces.
-
-The 'when' may not be obvious at first glance - there is no date field. This is a feed of SessionSeries - it contains information that relates to a number of sessions. 
-The date and time information that relates to an individual scheduled session is handled separately. 
-In some cases, SessionSeries are linked to a separate ScheduledSession feed by an id variable. 
-However, in this feed, the individual dated sessions are described in data.subEvent.
-
-Ideally, the URL provided for an individual session takes a user directly to the booking page for that session. 
-The simplifies the user journey of discovering and booking, reducing barriers and helping people get active.
-
-OpenActive also has a draft [controlled vocabulary for accessibility support](https://openactive.io/accessibility-support/), but not all providers use this.
 
 ```
 # Call an API endpoint
@@ -190,6 +177,20 @@ glimpse(opp$data.accessibilitySupport)
 
 #Like the activity list, these terms are managed as concepts in a vocabulary.
 ```
+Notes:
+
+For the 'what', we use a standardised list of activities, managed as concepts in a [controlled vocabulary](https://activity-list.openactive.io/en/hierarchical_concepts.html). 
+This helps app designers to consistently present and group and filter activities in search interfaces.
+
+The 'when' may not be obvious at first glance - there is no date field. This is a feed of SessionSeries - it contains information that relates to a number of sessions. 
+The date and time information that relates to an individual scheduled session is handled separately. 
+In some cases, SessionSeries are linked to a separate ScheduledSession feed by an id variable. 
+However, in this feed, the individual dated sessions are described in data.subEvent.
+
+Ideally, the URL provided for an individual session takes a user directly to the booking page for that session. 
+This simplifies the user journey of discovering and booking, reducing barriers and helping people get active.
+
+OpenActive also has a draft [controlled vocabulary for accessibility support](https://openactive.io/accessibility-support/), but not all providers use this.
 
 ## Reading all the pages in a data feed
 
