@@ -1,7 +1,5 @@
 # OpenActive files
 OpenActive/
-service-auth.json
-googleauthr-auth-key.json
 
 # History files
 .Rhistory
