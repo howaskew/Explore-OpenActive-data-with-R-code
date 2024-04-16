@@ -52,9 +52,9 @@ library(shiny)
 library(ggplot2)
 
 ## Listing data feeds
-url = "http://dataset-directory.herokuapp.com/datasets"
+url_all_feeds = "http://dataset-directory.herokuapp.com/datasets"
 
-res = try(GET(url), silent = T)
+res = try(GET(url_all_feeds), silent = T)
 if (!inherits(res, "try-error")) {
   if (res$status_code >= 200 && res$status_code < 400) {
     data_feeds = NULL
@@ -194,7 +194,7 @@ OpenActive also has a draft [controlled vocabulary for accessibility support](ht
 
 ## Reading all the pages in a data feed
 
-Remember the goal is to simplify the user journey from discovering an activity to booking it. It would be frustrating to discover an activity in a search but then to find it is fully booked. To avoid this, we have to find a way to keep availability up to date, potentially for millions of activities, in near real time, without creating too much demand on data publisher's systems.
+Remember the goal is to simplify the user journey from discovering an activity to booking it. It would be frustrating to discover an activity in a search but then to find it is fully booked. To avoid this, we have to find a way to keep availability up to date, potentially for millions of activities, in near real time, without creating too much demand on data publishers systems.
 
 The solution OpenActive have developed is called the [Realtime Paged Data Exchange](https://developer.openactive.io/publishing-data/data-feeds/how-a-data-feed-works), or RPDE.
 
@@ -206,12 +206,12 @@ You can check out the link above for full details. For now, the key points are:
 5. the latest version of each opportunity has the most up to date information
 6. opportunities have a state of either 'updated' or 'deleted'
 
-Looking again at the feed we returned earlier, There is an field called 'next' that lists the url of the next page in the feed.
-This is a URL with same base or stem in the url with added parameters: afterTimestamp and afterId.
+Looking again at the feed we returned earlier, there is a field called 'next' that lists the URL of the next page in the feed.
+This is a URL with same base or stem but with added parameters: afterTimestamp and afterId.
 This tells a data consumer where to pickup reading the feed.
 If the next page is empty, then we have no new items to consider - we are at the end of the feed.
 But if new items are found, we need a way to store them alongside the original data.
-This allows us to minimise the burden on publisher's systems and to do the processing required for RPDE points 4, 5 and 6 above.
+This allows us to minimise the burden on publishers systems and to do the processing required for RPDE points 4, 5 and 6 above.
 
 Here's one approach:
 - Create a folder to store the combined datasets
@@ -267,7 +267,7 @@ saveRDS(control, file="control.rds")
 #5) Read in any existing data
 #6) Append rows
 #7) Sort by id and modified and keep last modified
-#8) Storing the updated data
+#8) Store the updated data
 #9) Update the control table.
 #10) If end of feed: go on to next feed
 #11) If not: Go back to start
@@ -342,7 +342,7 @@ updateFeeds <- function() {
             print(paste("NO PREVIOUS DATA - CREATING FILE AND ADDING",nrow(data$items),"ITEMS"))
             dataToStore = data$items
           } 
-          #8) Storing the updated data
+          #8) Store the updated data
           #For displaying live opportunities, remove any 'deleted' items
           dataToStore <- filter(dataToStore,state=='updated')
           saveRDS(dataToStore, file=paste0("feed_no_",feed,".rds"))
