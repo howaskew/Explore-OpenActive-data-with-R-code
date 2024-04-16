@@ -123,19 +123,19 @@ glimpse(data$items)
 opp = filter(data$items, state == "updated") %>% slice_head()
 glimpse(opp)
 
-#Thinking of the 'who, what, where, when' questions:
+#Thinking of the "who, what, where, when" questions:
 
 #Who?
 opp$data.organizer.name
 
-#The 'What' is usually contained in data.activity:
+#The "What" is usually contained in data.activity:
 glimpse(opp$data.activity)
 
 #This shows the relevant concepts chosen from a controlled vocabulary.
 #What?
 opp$data.activity[[1]]$prefLabel
 
-#We can see 'where' in the data.location fields:
+#We can see "where" in the data.location fields:
 glimpse(select(opp,contains("data.location")))
 
 #With geospatial coordinates, we can plot the location on a map, using leaflet:
@@ -147,7 +147,7 @@ leaflet() %>%
              lat=opp$data.location.geo.latitude, 
              popup=opp$data.activity[[1]]$prefLabel)
 
-#The 'when' is not obvious at first glance - there is no date field.
+#The "when" is not obvious at first glance - there is no date field.
 #This is a feed of SessionSeries - it contains information that relates to a number of sessions.
 #In this feed, the individual dated sessions are described in data.subEvent:
 
@@ -179,10 +179,10 @@ glimpse(opp$data.accessibilitySupport)
 ```
 Notes:
 
-For the 'what', we use a standardised list of activities, managed as concepts in a [controlled vocabulary](https://activity-list.openactive.io/en/hierarchical_concepts.html). 
+For the "what", we use a standardised list of activities, managed as concepts in a [controlled vocabulary](https://activity-list.openactive.io/en/hierarchical_concepts.html). 
 This helps app designers to consistently present and group and filter activities in search interfaces.
 
-The 'when' may not be obvious at first glance - there is no date field. This is a feed of SessionSeries - it contains information that relates to a number of sessions. 
+The "when" may not be obvious at first glance - there is no date field. This is a feed of SessionSeries - it contains information that relates to a number of sessions. 
 The date and time information that relates to an individual scheduled session is handled separately. 
 In some cases, SessionSeries are linked to a separate ScheduledSession feed by an id variable. 
 However, in this feed, the individual dated sessions are described in data.subEvent.
@@ -204,9 +204,9 @@ You can check out the link above for full details. For now, the key points are:
 3. you keep a copy of the data, so you only need to pick up the new pages
 4. an opportunity can appear more than once, on more than one page
 5. the latest version of each opportunity has the most up to date information
-6. opportunities have a state of either 'updated' or 'deleted'
+6. opportunities have a state of either "updated" or "deleted"
 
-Looking again at the feed we returned earlier, there is a field called 'next' that lists the URL of the next page in the feed.
+Looking again at the feed we returned earlier, there is a field called "next" that lists the URL of the next page in the feed.
 This is a URL with same base or stem but with added parameters: afterTimestamp and afterId.
 This tells a data consumer where to pickup reading the feed.
 If the next page is empty, then we have no new items to consider - we are at the end of the feed.
@@ -214,10 +214,10 @@ But if new items are found, we need a way to store them alongside the original d
 This allows us to minimise the burden on publishers systems and to do the processing required for RPDE points 4, 5 and 6 above.
 
 Here's one approach:
-- Create a folder to store the combined datasets
-- Create a 'control table' or similar to track what page you are on
+- Create a folder to store the data from pages you've read already
+- Create a "control table" or similar to track what page you are on
 - Start reading a feed, appending new data to any existing data and storing after each page
-- Update the control table.
+- Update the control table
 
 This means you can pick up reading a feed without starting all over again, minimising the burden on publishers and making it easier to resume after any error.
 
@@ -230,14 +230,14 @@ The following code:
 ```
 #Looking again at the feed we returned earlier
 names(data)
-#There is an field called 'next' that lists the url of the next page in the feed:
-data['next']
+#There is an field called "next" that lists the url of the next page in the feed:
+data["next"]
 #This is the same base or stem in the url with added parameters: afterTimestamp and afterId.
 #This tells a data consumer where to pickup reading the feed.
 
 #Using the earlier function, we can call this new url:
 
-d <- callURL(data['next'])
+d <- callURL(data["next"])
 next_page = fromJSON(rawToChar(d$content),flatten = T)
 rm(d)
 glimpse(next_page)
@@ -343,8 +343,8 @@ updateFeeds <- function() {
             dataToStore = data$items
           } 
           #8) Store the updated data
-          #For displaying live opportunities, remove any 'deleted' items
-          dataToStore <- filter(dataToStore,state=='updated')
+          #For displaying live opportunities, remove any "deleted" items
+          dataToStore <- filter(dataToStore,state=="updated")
           saveRDS(dataToStore, file=paste0("feed_no_",feed,".rds"))
         } else {
           print("NO NEW ITEMS")
@@ -407,7 +407,7 @@ Only records with latitude and longitude are shown.
 
 There is some processing to unpack the activity and facility type labels into a consistent form.
 
-The 'raw' data for an opportunity is not the original json, but the R data frame version where nested json is converted to lists.
+The "raw" data for an opportunity is not the original JSON, but the R data frame version where nested JSON is converted to lists.
 
 ```
 
@@ -516,9 +516,7 @@ There you have it - an intro to exploring OpenActive opportunity data in R.
 
 That covers the basics. Areas for further exploration:
 - combining linked data feeds e.g. SessionSeries and ScheduledSessions
-- handling inconsistencies between feeds
-
-
+- handling inconsistencies between feeds (for example, the formatting of "NEXT" URLs: a few providers only provide the parameters, not the whole URL)
 
 
 
