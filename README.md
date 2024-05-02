@@ -1,3 +1,7 @@
+<img src='https://openactive.io/brand-assets/openactive-logo-large.png' width='500'>
+
+[![License](http://img.shields.io/:license-mit-blue.svg)](https://opensource.org/license/mit/)
+
 # Explore OpenActive data with R code
 
 Example R code to harvest and display open data about opportunities for sport and physical activity.
