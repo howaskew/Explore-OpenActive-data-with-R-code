@@ -297,7 +297,7 @@ callURL <- function(url,lastStartTime) {
 cleanUp <- function() {
   objects <- c("control","d","data","dataToStore","endOfFeed","files","nextUrl","previous")
   for (object in objects)
-  if (exists(object)) {rm(object)}
+    if (exists(object)) {rm(object)}
 }
 
 #A function to harvest OA data 
@@ -327,28 +327,28 @@ updateFeeds <- function() {
         data = fromJSON(rawToChar(d$content),flatten = T)
         #4) Check if the new page has items
         if (is.data.frame(data$items)) {
-        if (is.data.frame(data$items) & nrow(data$items)>0) {
-          #5) Appending new data to any existing data
-          files = list.files()
-          previous = paste0("feed_no_",feed,".rds")
-          if (previous %in% files) {
-            print(paste("READING PREVIOUS DATA AND ADDING",nrow(data$items),"ITEMS"))
-            dataToStore <- readRDS(previous)
-            #6) Append the new rows
-            dataToStore <- bind_rows(dataToStore,data$items)
-            #7) Sort by id and modified and keep last modified
-            dataToStore <- arrange(dataToStore,id,modified) %>% group_by(id) %>% slice_tail()
+          if (is.data.frame(data$items) & nrow(data$items)>0) {
+            #5) Appending new data to any existing data
+            files = list.files()
+            previous = paste0("feed_no_",feed,".rds")
+            if (previous %in% files) {
+              print(paste("READING PREVIOUS DATA AND ADDING",nrow(data$items),"ITEMS"))
+              dataToStore <- readRDS(previous)
+              #6) Append the new rows
+              dataToStore <- bind_rows(dataToStore,data$items)
+              #7) Sort by id and modified and keep last modified
+              dataToStore <- arrange(dataToStore,id,modified) %>% group_by(id) %>% slice_tail()
+            } else {
+              print(paste("NO PREVIOUS DATA - CREATING FILE AND ADDING",nrow(data$items),"ITEMS"))
+              dataToStore = data$items
+            } 
+            #8) Store the updated data
+            #For displaying live opportunities, remove any "deleted" items
+            dataToStore <- filter(dataToStore,state=="updated")
+            saveRDS(dataToStore, file=paste0("feed_no_",feed,".rds"))
           } else {
-            print(paste("NO PREVIOUS DATA - CREATING FILE AND ADDING",nrow(data$items),"ITEMS"))
-            dataToStore = data$items
-          } 
-          #8) Store the updated data
-          #For displaying live opportunities, remove any "deleted" items
-          dataToStore <- filter(dataToStore,state=="updated")
-          saveRDS(dataToStore, file=paste0("feed_no_",feed,".rds"))
-        } else {
-          print("NO NEW ITEMS")
-        }
+            print("NO NEW ITEMS")
+          }
         } else {
           print("NO NEW ITEMS")
         }
@@ -389,7 +389,7 @@ leaflet() %>%
              lat=opp$data.location.geo.latitude, 
              popup=opp$data.activity[[1]]$prefLabel)
 
-  
+
 ```
 
 ## Creating a simple shiny app to display and filter OpenActive data
