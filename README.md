@@ -515,10 +515,11 @@ shinyApp(ui = ui, server = server)
 There you have it - an intro to exploring OpenActive opportunity data in R.
 
 That covers the basics. Areas for further exploration:
-- combining linked data feeds e.g. SessionSeries and ScheduledSessions
-- handling inconsistencies between feeds (for example, the formatting of "NEXT" URLs: a few providers only provide the parameters, not the whole URL)
-
-
-
-
+- combining linked data feeds:
+    - SessionSeries (e.g. Yoga Class) and ScheduledSessions (Thursday at 8pm)
+    - FacilityUse (e.g. Squash Court) and Slots (Thursday 6pm to 6:30pm)
+    
+    For more details, see [Types of RPDE feed](https://developer.openactive.io/publishing-data/data-feeds/types-of-feed)
+- handling inconsistencies between feeds, for example:
+    - the formatting of "NEXT" URLs: a few providers only provide the parameters, not the whole URL
 
